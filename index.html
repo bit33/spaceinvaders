@@ -1,0 +1,33 @@
+ <!DOCTYPE html>
+ <html>
+   <head>
+     <title>Spaceinvaders</title>
+       <meta charset="utf-8">
+       <meta name = "viewport" content = "width = device-width, initial-scale = 1.0, maximum-scale = 1.0, minimum-scale = 1.0, user-scalable = 0, minimal-ui" />
+       <style type = "text/css">
+         body {
+           padding: 0px;
+           margin: 0px;
+         }
+         canvas {
+           display:block;
+           margin: 0;
+           position: absolute;
+           top: 50%;
+           left: 50%;
+           transform: translate(-50%, -50%);
+         }
+
+         @font-face {
+           font-family: Pixel;
+           src: url('assets/pixel.ttf');
+           font-weight:normal;
+         }
+         </style>
+         <script type="text/javascript" src="build/project.bundle.js" charset="utf-8"></script>
+     </head>
+     <body style="overflow: hidden;">
+       <!--<div id="phaser-game"></div>-->
+       <div style="font-family:Pixel; position:absolute; left:-1000px; visibility:hidden;">.</div>
+     </body>
+ </html>
