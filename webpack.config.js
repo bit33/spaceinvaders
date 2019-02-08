@@ -4,6 +4,10 @@ const webpack = require('webpack');
 const path = require('path');
 
 module.exports = {
+    mode: 'production',
+    performance: {
+      hints: false
+    }
 
     entry: './src/index.js',
 

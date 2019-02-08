@@ -1,7 +1,7 @@
 {
-  "name": "phaser3-project-template",
-  "version": "1.0.9",
-  "description": "A Phaser 3 Project Template",
+  "name": "spaceinvaders",
+  "version": "0.0.1",
+  "description": "Phaser v3 demo project",
   "main": "src/index.js",
   "scripts": {
     "build": "webpack",
@@ -9,18 +9,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/photonstorm/phaser3-project-template.git"
+    "url": "git+https://github.com/bit33/spaceinvaders.git"
   },
-  "author": "Richard Davey <rdavey@gmail.com> (http://www.photonstorm.com)",
-  "license": "MIT",
-  "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
-  "bugs": {
-    "url": "https://github.com/photonstorm/phaser3-project-template/issues"
-  },
-  "homepage": "https://github.com/photonstorm/phaser3-project-template#readme",
   "devDependencies": {
-    "webpack-dev-server": "^2.11.0",
-    "webpack": "^3.4.1",
+    "webpack-cli": "^3.2.3",
+    "webpack-dev-server": "^3.1.11",
+    "webpack": "^4.29.3",
     "raw-loader": "^0.5.1"
   },
   "dependencies": {
