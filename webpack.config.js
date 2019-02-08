@@ -7,7 +7,7 @@ module.exports = {
     mode: 'production',
     performance: {
       hints: false
-    }
+    },
 
     entry: './src/index.js',
 
