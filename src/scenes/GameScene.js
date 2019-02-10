@@ -1,4 +1,6 @@
-import { Scene } from 'phaser';
+import { Scene, Phaser } from 'phaser';
+import Bomb from '../Bomb';
+//import { Bullet } from '../Bullet';
 
 export var GC = {
   ALIEN_1:    0,
@@ -64,7 +66,11 @@ export default class GameScene extends Scene {
     this.rocket = rocketFactory(this);
     this.bullets = this.physics.add.group();
     this.aliens = this.physics.add.group();
-    this.bombs = this.physics.add.group();
+    this.bombs = this.physics.add.group({
+      maxSize: 3,
+      classType: Bomb,
+      runChildUpdate: true
+    });
 
     this.aliensStartVelocity = 40;
     this.initAliens();
@@ -110,8 +116,18 @@ export default class GameScene extends Scene {
   }
 
   onWorldbounds(body) {
+    console.log("onWorldBounds:" + body.gameObject);
+
     if (this.state == STATE.RUN) {
-      if (this.aliens.contains(body.gameObject)) {
+
+      const isBomb = this.bombs.contains(body.gameObject);
+      if (isBomb) {
+        body.gameObject.deactivate();
+      }
+
+      const isAlien = this.aliens.contains(body.gameObject); 
+      if (isAlien) {
+        console.log("alien");
         this.aliensVelocity = -this.aliensVelocity * 1.1;
         this.aliens.setVelocityX(this.aliensVelocity);
 
@@ -146,19 +162,12 @@ export default class GameScene extends Scene {
       if (nrOfAliens > 0) {
         let alienIndex = Math.floor(Math.random() * nrOfAliens);
         let alien = this.aliens.getChildren()[alienIndex];
-        this.bombFactory(alien.x, alien.y+10);
+        this.bombs.get().throw(alien.x, alien.y+10);
         this.alienThrowsBombInFuture();
       }
     }
   }
 
-  bombFactory(x, y) {
-    let bomb = this.physics.add.sprite(x, y).play('bomb');
-    this.bombs.add(bomb);
-    bomb.setVelocityY(300);
-    bomb.checkWorldBounds = true;
-    bomb.outOfBoundsKill = true;
-  }
 
   update() {
     this.handleCursor();
@@ -236,7 +245,7 @@ export default class GameScene extends Scene {
     this.state = STATE.GAMEOVER;
     this.aliens.setVelocityX(0);
     this.aliens.setVelocityY(0);
-    this.bombs.setVelocityY(0);
+    //this.bombs.setVelocityY(0);
     this.gameoverText.setVisible(true);
     this.aliensStartVelocity = 40;
 
@@ -264,7 +273,9 @@ export default class GameScene extends Scene {
     this.beginText.setVisible(false);
     this.gameoverText.setVisible(false);
     this.aliens.clear(true, true);
-    this.bombs.clear(true, true);
+    this.bombs.getChildren().forEach(
+      function(bomb) { bomb.deactivate(); }
+    );
     this.initAliens();
   }
 
