@@ -67,7 +67,7 @@ export default class GameScene extends Scene {
     this.bullets = this.physics.add.group();
     this.aliens = this.physics.add.group();
     this.bombs = this.physics.add.group({
-      maxSize: 3,
+      maxSize: 20,
       classType: Bomb,
       runChildUpdate: true
     });
@@ -125,9 +125,8 @@ export default class GameScene extends Scene {
         body.gameObject.deactivate();
       }
 
-      const isAlien = this.aliens.contains(body.gameObject); 
+      const isAlien = this.aliens.contains(body.gameObject);
       if (isAlien) {
-        console.log("alien");
         this.aliensVelocity = -this.aliensVelocity * 1.1;
         this.aliens.setVelocityX(this.aliensVelocity);
 
