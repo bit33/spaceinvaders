@@ -1,6 +1,7 @@
 import { Scene, Phaser } from 'phaser';
 import Bomb from '../Bomb';
 import Bullet from '../Bullet';
+import { Alien1, Alien2, Alien3 } from '../Alien';
 
 export var GC = {
   ALIEN_1:    0,
@@ -38,10 +39,11 @@ export default class GameScene extends Scene {
   }
 
   create () {
+    this.level = 1;
     let sizeY = this.game.canvas.height;
     let sizeX = this.game.canvas.width;
     let textConfig =
-     { fontSize: '44px',  fontFamily: 'Pixel', fill: "#ffffff" };
+      { fontSize: '44px',  fontFamily: 'Pixel', fill: "#ffffff" };
 
     this.gameoverText = this.add.text(sizeX / 2, sizeY / 2 - 100,
       'GAME OVER', textConfig)
@@ -69,7 +71,6 @@ export default class GameScene extends Scene {
       classType: Bullet,
       runChildUpdate: true
     });
-    //this.bullets = this.physics.add.group();
     this.aliens = this.physics.add.group();
     this.bombs = this.physics.add.group({
       maxSize: 20,
@@ -210,12 +211,6 @@ export default class GameScene extends Scene {
 
   fireBullet() {
     this.bullets.get().shoot(this.rocket.x-1, this.rocket.y-18);
-    //this.sound.play('shoot');
-    //let bullet = this.physics.add.sprite(this.rocket.x-1, this.rocket.y-18, 'bullet');
-    //this.bullets.add(bullet);
-    //bullet.setVelocityY(-300);
-    //bullet.checkWorldBounds = true;
-    //bullet.outOfBoundsKill = true;
   }
 
   alienHitEvent(alien, bullet) {
@@ -272,6 +267,7 @@ export default class GameScene extends Scene {
   }
 
   restartGame() {
+    this.level = 1;
     if (this.score > this.hiScore) {
       this.hiScore = this.score;
     }
