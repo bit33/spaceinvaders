@@ -1,6 +1,6 @@
 import { Scene, Phaser } from 'phaser';
 import Bomb from '../Bomb';
-//import { Bullet } from '../Bullet';
+import Bullet from '../Bullet';
 
 export var GC = {
   ALIEN_1:    0,
@@ -64,7 +64,12 @@ export default class GameScene extends Scene {
     this.scoreText = this.add.text(22, 32, '', textConfig);
 
     this.rocket = rocketFactory(this);
-    this.bullets = this.physics.add.group();
+    this.bullets = this.physics.add.group({
+      maxSize: 20,
+      classType: Bullet,
+      runChildUpdate: true
+    });
+    //this.bullets = this.physics.add.group();
     this.aliens = this.physics.add.group();
     this.bombs = this.physics.add.group({
       maxSize: 20,
@@ -116,9 +121,12 @@ export default class GameScene extends Scene {
   }
 
   onWorldbounds(body) {
-    console.log("onWorldBounds:" + body.gameObject);
-
     if (this.state == STATE.RUN) {
+
+      const isBullet = this.bullets.contains(body.gameObject);
+      if (isBullet) {
+        body.gameObject.deactivate();
+      }
 
       const isBomb = this.bombs.contains(body.gameObject);
       if (isBomb) {
@@ -201,18 +209,19 @@ export default class GameScene extends Scene {
   }
 
   fireBullet() {
-    this.sound.play('shoot');
-    let bullet = this.physics.add.sprite(this.rocket.x-1, this.rocket.y-18, 'bullet');
-    this.bullets.add(bullet);
-    bullet.setVelocityY(-300);
-    bullet.checkWorldBounds = true;
-    bullet.outOfBoundsKill = true;
+    this.bullets.get().shoot(this.rocket.x-1, this.rocket.y-18);
+    //this.sound.play('shoot');
+    //let bullet = this.physics.add.sprite(this.rocket.x-1, this.rocket.y-18, 'bullet');
+    //this.bullets.add(bullet);
+    //bullet.setVelocityY(-300);
+    //bullet.checkWorldBounds = true;
+    //bullet.outOfBoundsKill = true;
   }
 
   alienHitEvent(alien, bullet) {
     this.sound.play('explosion');
     alien.play('explosion');
-    bullet.destroy();
+    bullet.deactivate();
     alien.destroy();
     this.score += 1;
     this.printScore();
@@ -233,6 +242,7 @@ export default class GameScene extends Scene {
   }
 
   levelUp() {
+    this.level++;
     this.aliensStartVelocity = this.aliensStartVelocity + 20;
     this.time.addEvent(
       { delay: 2000, callback: this.initAliens, callbackScope: this});﻿﻿
@@ -244,7 +254,8 @@ export default class GameScene extends Scene {
     this.state = STATE.GAMEOVER;
     this.aliens.setVelocityX(0);
     this.aliens.setVelocityY(0);
-    //this.bombs.setVelocityY(0);
+    this.bombs.setVelocityX(0);
+    this.bombs.setVelocityY(0);
     this.gameoverText.setVisible(true);
     this.aliensStartVelocity = 40;
 
