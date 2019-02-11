@@ -1,46 +1,47 @@
 import 'phaser';
-import { GC } from './scenes/GameScene';
+import { GC } from './GC';
 
 class Alien extends Phaser.Physics.Arcade.Sprite {
 
-  constructor(scene) {
-    super(scene, 0, 0, "graphic");
+  constructor(scene, alienType) {
+    super(scene, 0, 0, "graphic", alienType);
+    this.alienType = alienType;
   }
 
   activate(x, y) {
+    this.play("alien" + this.alienType);
     this.setCollideWorldBounds(true);
     this.body.onWorldBounds = true;
-    this.setPosition(x, y);
-    this.setActive(true);
-    this.setVisible(true);
+    this.enableBody(true, x, y, true, true);
   }
 
   deactivate() {
-    this.setVisible(false);
-    this.setActive(false);
+    this.disableBody(true, true);
+  }
+
+  explode() {
+    this.scene.sound.play('explosion');
+    this.deactivate();
   }
 }
 
 export class Alien1 extends Alien {
 
   constructor(scene) {
-    super(scene);
-    this.play('alien' + GC.ALIEN_1);
+    super(scene, GC.ALIEN_1);
   }
 }
 
 export class Alien2 extends Alien {
 
   constructor(scene) {
-    super(scene);
-    this.play('alien' + GC.ALIEN_2);
+    super(scene, GC.ALIEN_2);
   }
 }
 
 export class Alien3 extends Alien {
 
   constructor(scene) {
-    super(scene);
-    this.play('alien' + GC.ALIEN_3);
+    super(scene, GC.ALIEN_3);
   }
 }

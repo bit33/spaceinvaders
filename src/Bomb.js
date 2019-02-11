@@ -8,16 +8,13 @@ export default class Bomb extends Phaser.Physics.Arcade.Sprite {
   }
 
   throw(x, y) {
+    this.enableBody(true, x, y, true, true);
     this.setCollideWorldBounds(true);
     this.body.onWorldBounds = true;
-    this.setPosition(x, y);
-    this.setActive(true);
-    this.setVisible(true);
     this.setVelocityY(300);
   }
 
   deactivate() {
-    this.setVisible(false);
-    this.setActive(false);
+    this.disableBody (true, true);
   }
 }

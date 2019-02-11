@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { GC } from './GameScene';
+import { GC } from '../GC';
 
 export default class LoaderScene extends Scene {
 

@@ -10,15 +10,11 @@ export default class Bullet extends Phaser.Physics.Arcade.Sprite {
     this.scene.sound.play('shoot');
     this.setCollideWorldBounds(true);
     this.body.onWorldBounds = true;
-    this.setPosition(x, y);
-    this.setActive(true);
-    this.setVisible(true);
+    this.enableBody(true, x, y, true, true);
     this.setVelocityY(-300);
-
   }
 
   deactivate() {
-    this.setVisible(false);
-    this.setActive(false);
+    this.disableBody (true, true);
   }
 }

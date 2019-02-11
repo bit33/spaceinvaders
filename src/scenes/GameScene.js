@@ -1,36 +1,10 @@
 import { Scene, Phaser } from 'phaser';
+import { GC, STATE } from '../GC';
 import Bomb from '../Bomb';
 import Bullet from '../Bullet';
-import { Alien1, Alien2, Alien3 } from '../Alien';
-
-export var GC = {
-  ALIEN_1:    0,
-  ALIEN_2:    2,
-  ALIEN_3:    4,
-  ROCKET:     6,
-  EXPLOSION:  7
-}
-
-var STATE = {
-  READY:    0,
-  RUN:      1,
-  GAMEOVER: 2
-}
-
-function rocketFactory(scene) {
-  let rocket = scene.physics.add.sprite(300, 500, "graphic", GC.ROCKET)
-    .setImmovable(true);
-
-  rocket.setCollideWorldBounds(true);
-  rocket.body.onWorldBounds = true;
-  rocket.body.world.on('worldbounds', function(body) {
-    if (body.gameObject === this) {
-      this.setActive(false);
-    }
-  }, rocket);
-
-  return rocket;
-}
+import AlienManager from '../AlienManager';
+import ScoreManager from '../ScoreManager';
+import rocketFactory from '../RocketFactory';
 
 export default class GameScene extends Scene {
 
@@ -39,10 +13,43 @@ export default class GameScene extends Scene {
   }
 
   create () {
+    this.createText();
+
     this.level = 1;
-    let sizeY = this.game.canvas.height;
-    let sizeX = this.game.canvas.width;
-    let textConfig =
+    this.sound.add('explosion');
+    this.sound.add('shoot');
+    this.cursors = this.input.keyboard.createCursorKeys();
+
+    this.rocket = rocketFactory.create(this);
+    this.bullets = this.physics.add.group({
+      maxSize: 20,
+      classType: Bullet,
+      runChildUpdate: true
+    });
+
+    this.bombs = this.physics.add.group({
+      maxSize: 20,
+      classType: Bomb,
+      runChildUpdate: true
+    });
+    this.alienManager = new AlienManager(this, this.level);
+
+    this.physics.world.on('worldbounds', this.onWorldbounds, this);
+    this.alienManager.addColider(this.bullets, this.alienHitEvent, this);
+    this.alienManager.addColider(this.rocket, this.alienOnRocketEvent, this);
+    this.physics.add.collider(this.rocket, this.bombs, this.bombHitEvent, null, this);
+
+    this.input.keyboard.on("keydown", this.handleKey, this);
+
+    this.scoreManager = new ScoreManager(this);
+    this.scoreManager.print();
+    this.state = STATE.RUN;
+  }
+
+  createText() {
+    const sizeY = this.game.canvas.height;
+    const sizeX = this.game.canvas.width;
+    const textConfig =
       { fontSize: '44px',  fontFamily: 'Pixel', fill: "#ffffff" };
 
     this.gameoverText = this.add.text(sizeX / 2, sizeY / 2 - 100,
@@ -50,132 +57,31 @@ export default class GameScene extends Scene {
       .setVisible(false)
       .setDepth(1);
     this.gameoverText.setOrigin(0.5);
+
     this.beginText = this.add.text(sizeX / 2, (sizeY / 2) - 60,
      'PRESS ANY KEY FOR NEW GAME', textConfig)
       .setVisible(false)
       .setDepth(1);
     this.beginText.setOrigin(0.5);
-
-    this.sound.add('explosion');
-    this.sound.add('shoot');
-
-    textConfig =
-      { fontSize: '16px',  fontFamily: 'Pixel', fill: "#ffffff" };
-
-    this.add.text(16, 16, 'SCORE   HI-SCORE', textConfig);
-    this.scoreText = this.add.text(22, 32, '', textConfig);
-
-    this.rocket = rocketFactory(this);
-    this.bullets = this.physics.add.group({
-      maxSize: 20,
-      classType: Bullet,
-      runChildUpdate: true
-    });
-    this.aliens = this.physics.add.group();
-    this.bombs = this.physics.add.group({
-      maxSize: 20,
-      classType: Bomb,
-      runChildUpdate: true
-    });
-
-    this.aliensStartVelocity = 40;
-    this.initAliens();
-    this.physics.world.on('worldbounds', this.onWorldbounds, this);
-
-    this.physics.add.collider(this.aliens, this.bullets, this.alienHitEvent, null, this);
-    this.physics.add.collider(this.aliens, this.rocket, this.alienOnRocketEvent, null, this);
-    this.physics.add.collider(this.rocket, this.bombs, this.bombHitEvent, null, this);
-
-    this.input.keyboard.on("keydown", this.handleKey, this);
-
-    this.hiScore = 0;
-    this.score = 0;
-    this.printScore();
-    this.state = STATE.RUN;
-  }
-
-  initAliens() {
-    this.makeAlienRow(0, GC.ALIEN_1);
-    this.makeAlienRow(1, GC.ALIEN_1);
-    this.makeAlienRow(2, GC.ALIEN_2);
-    this.makeAlienRow(3, GC.ALIEN_2);
-    this.makeAlienRow(4, GC.ALIEN_3);
-
-    this.aliensVelocity = this.aliensStartVelocity;
-    this.aliens.setVelocityX(this.aliensVelocity);
-
-    this.alienThrowsBombInFuture();
-  }
-
-  makeAlienRow(row, alienType) {
-    for (var column = 0; column <= 12; column++) {
-      let x = 100 + (column * 54);
-      let y = 70 + (row * 50);
-      // Weird I have to have a graphic image in sprite creation otherwise
-      // aliens don't bounce on world border
-      let alien = this.physics.add.sprite(x, y, "graphic", alienType)
-        .play('alien' + alienType);
-      this.aliens.add(alien);
-      alien.setCollideWorldBounds(true);
-      alien.body.onWorldBounds = true;
-    }
   }
 
   onWorldbounds(body) {
+    const isBullet = this.bullets.contains(body.gameObject);
+    if (isBullet) {
+      body.gameObject.deactivate();
+    }
+
+    const isBomb = this.bombs.contains(body.gameObject);
+    if (isBomb) {
+      body.gameObject.deactivate();
+    }
+
     if (this.state == STATE.RUN) {
-
-      const isBullet = this.bullets.contains(body.gameObject);
-      if (isBullet) {
-        body.gameObject.deactivate();
+      if (this.alienManager.onWorldbounds(body)) {
+        this.gameover();
       }
-
-      const isBomb = this.bombs.contains(body.gameObject);
-      if (isBomb) {
-        body.gameObject.deactivate();
-      }
-
-      const isAlien = this.aliens.contains(body.gameObject);
-      if (isAlien) {
-        this.aliensVelocity = -this.aliensVelocity * 1.1;
-        this.aliens.setVelocityX(this.aliensVelocity);
-
-        function isNotLanded(alien) {
-          return(alien.y+5 > maxY);
-        }
-
-        let maxY = this.game.canvas.height;
-        if (!this.aliens.getChildren().find(isNotLanded)) {
-          this.aliens.getChildren().forEach(
-            function(alien) { alien.y += 5; }
-          );
-        } else {
-          this.gameover();
-        }
-      };
     };
   };
-
-  alienThrowsBombInFuture() {
-    let delay = 400 + Math.random() * 4000;
-    this.time.addEvent({
-      delay: delay,
-      callback: this.alienThrowsBomb,
-      callbackScope: this
-    });
-  }
-
-  alienThrowsBomb() {
-    if (this.state == STATE.RUN) {
-      let nrOfAliens = this.aliens.getChildren().length;
-      if (nrOfAliens > 0) {
-        let alienIndex = Math.floor(Math.random() * nrOfAliens);
-        let alien = this.aliens.getChildren()[alienIndex];
-        this.bombs.get().throw(alien.x, alien.y+10);
-        this.alienThrowsBombInFuture();
-      }
-    }
-  }
-
 
   update() {
     this.handleCursor();
@@ -183,10 +89,9 @@ export default class GameScene extends Scene {
 
   handleCursor() {
     if (this.state == STATE.RUN) {
-      var cursors = this.input.keyboard.createCursorKeys();
-      if (cursors.left.isDown) {
+      if (this.cursors.left.isDown) {
         this.rocket.setVelocityX(-160);
-      } else if (cursors.right.isDown) {
+      } else if (this.cursors.right.isDown) {
         this.rocket.setVelocityX(160);
       } else {
         this.rocket.setVelocityX(0);
@@ -210,45 +115,54 @@ export default class GameScene extends Scene {
   }
 
   fireBullet() {
-    this.bullets.get().shoot(this.rocket.x-1, this.rocket.y-18);
+    const bullet = this.bullets.get();
+    if (bullet) {
+      bullet.shoot(this.rocket.x-1, this.rocket.y-18);
+    }
   }
 
   alienHitEvent(alien, bullet) {
-    this.sound.play('explosion');
-    alien.play('explosion');
-    bullet.deactivate();
-    alien.destroy();
-    this.score += 1;
-    this.printScore();
-    let allAliensAreDead = this.aliens.getChildren().length === 0;
-    if (allAliensAreDead) this.levelUp();
+    if (this.state == STATE.RUN && alien.active && bullet.active) {
+      bullet.deactivate();
+      alien.explode();
+      this.scoreManager.point();
+      if (this.alienManager.testAllAliensDead()) {
+        this.levelUp();
+      }
+    }
   }
 
-  alienOnRocketEvent() {
-    if (this.state == STATE.RUN) {
+  alienOnRocketEvent(alien, rocket) {
+    if (this.state == STATE.RUN && alien.active) {
       this.gameover();
     }
   }
 
-  bombHitEvent() {
-    if (this.state == STATE.RUN) {
+  bombHitEvent(rocket, bomb) {
+    if (this.state == STATE.RUN && bomb.active) {
       this.gameover();
     }
   }
 
   levelUp() {
     this.level++;
-    this.aliensStartVelocity = this.aliensStartVelocity + 20;
     this.time.addEvent(
-      { delay: 2000, callback: this.initAliens, callbackScope: this});﻿﻿
+      { delay: 2000, callback: this.restart(), callbackScope: this});﻿﻿
+  }
+
+  restart() {
+    this.alienManager.restart(this.level);
   }
 
   gameover() {
+    this.state = STATE.GAMEOVER;
     this.sound.play('explosion');
     this.rocket.play('explosion');
-    this.state = STATE.GAMEOVER;
-    this.aliens.setVelocityX(0);
-    this.aliens.setVelocityY(0);
+    this.time.removeAllEvents();
+    this.alienManager.gameover();
+    this.bullets.getChildren().forEach(
+      function(bullet) { bullet.deactivate(); }
+    );
     this.bombs.setVelocityX(0);
     this.bombs.setVelocityY(0);
     this.gameoverText.setVisible(true);
@@ -262,37 +176,21 @@ export default class GameScene extends Scene {
   }
 
   ready() {
-    this.beginText.setVisible(true);
     this.state = STATE.READY;
+    this.beginText.setVisible(true);
   }
 
   restartGame() {
-    this.level = 1;
-    if (this.score > this.hiScore) {
-      this.hiScore = this.score;
-    }
-    this.score = 0;
-    this.printScore();
-
     this.state = STATE.RUN;
+    this.level = 1;
+    this.scoreManager.setHiScore();
+
     this.rocket.play('rocket');
     this.beginText.setVisible(false);
     this.gameoverText.setVisible(false);
-    this.aliens.clear(true, true);
     this.bombs.getChildren().forEach(
       function(bomb) { bomb.deactivate(); }
     );
-    this.initAliens();
-  }
-
-  padding(s) {
-    return s.toLocaleString('en',
-      {minimumIntegerDigits:4,minimumFractionDigits:0,useGrouping:false});
-  }
-
-  printScore() {
-    this.scoreText.setText(
-      this.padding(this.score) + '     ' + this.padding(this.hiScore)
-    );
+    this.restart();
   }
 }
