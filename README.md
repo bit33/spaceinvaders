@@ -34,7 +34,7 @@ npm run build
 
 **5) Run**
 ```
-npm run start`
+npm run start
 ```
 
 In your web brower you can now play the game:
