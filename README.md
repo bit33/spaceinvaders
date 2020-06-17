@@ -10,34 +10,34 @@ The game is build with [Phaser V3](https://github.com/photonstorm/phaser) Javasc
 
 Make sure you have [git](https://git-scm.com/downloads) installed and go on the command line to the directory where you like to download the source code.
 
-Download the source:
+**Download:**
 ```
 git clone https://github.com/bit33/spaceinvaders.git
 ```
 
-Go to the spaceinvaders directory:
+**Change directory:**
 ```
 cd spaceinvaders
 ```
 
-Download all dependecies:
+**Download dependecies:**
 ```
 npm install
 ```
 
-Build the game:
+**Build:**
 ```
 npm run build
 ```
 
-(The warnings are not errors)
+*(The warnings are not errors)*
 
-Run the game:
+**Run:**
 ```
 npm run start`
 ```
 
 In your web brower you can now play the game:
 ```
-http://localhost:8000/`
+http://localhost:8000/
 ```
