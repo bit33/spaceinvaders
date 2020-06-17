@@ -10,29 +10,29 @@ Javascript version of the retro game of Spaceinvaders. The game is build with [P
 
 Make sure you have [git](https://git-scm.com/downloads) installed and go on the command line to the directory where you like to download the source code.
 
-**Download:**
+**1) Download**
 ```
 git clone https://github.com/bit33/spaceinvaders.git
 ```
 
-**Change directory:**
+**2) Change directory**
 ```
 cd spaceinvaders
 ```
 
-**Download dependecies:**
+**3) Download dependecies**
 ```
 npm install
 ```
 
-**Build:**
+**4) Build**
 ```
 npm run build
 ```
 
 *(The warnings are not errors)*
 
-**Run:**
+**5) Run**
 ```
 npm run start`
 ```
