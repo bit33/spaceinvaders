@@ -1,10 +1,10 @@
 # Spaceinvaders
 
-Javascript version of the retro game of Spaceinvaders.
+Javascript version of the retro game of Spaceinvaders. The game is build with [Phaser V3](https://github.com/photonstorm/phaser) Javascript library.
 
-Play it here: [demo](https://bit33.io/spaceinvaders/)
+**Play it here: [demo](https://bit33.io/spaceinvaders/)**
 
-The game is build with [Phaser V3](https://github.com/photonstorm/phaser) Javascript library.
+
 
 ## Build this project
 
